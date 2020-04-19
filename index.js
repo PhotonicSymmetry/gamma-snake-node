@@ -29,7 +29,7 @@ app.post('/start', (request, response) => {
 
   // Response data
   const data = {
-    color: '#888888',
+    color: '#FF8000',
     headType: "regular",
     tailType: "regular"
   }
@@ -37,15 +37,59 @@ app.post('/start', (request, response) => {
   return response.json(data)
 })
 
-// This function is called on every turn of a game. It's how your snake decides where to move.
 // Valid moves are "up", "down", "left", or "right".
 // TODO: Use the information in cherrypy.request.json to decide your next move.
+var prevMove = -1;
+function makeChoice(data) {
+  // TODO: some sort of logic to prevent snake from trapping itself as well as attacking head of shorter opponents
+  var nums = [1, 1, 1, 1];
+  for (i = 0; i < data.board.snakes.length; i++) {
+    for (j = 0; j < data.board.snakes[i].body.length; j++) {
+      if ((data.board.snakes[i].body[j].x === data.you.body[0].x - 1 && data.board.snakes[i].body[j].y === data.you.body[0].y) || data.you.body[0].x - 1 === -1) {
+        nums[2] = 0;
+      }
+      if ((data.board.snakes[i].body[j].x === data.you.body[0].x + 1 && data.board.snakes[i].body[j].y === data.you.body[0].y) || data.you.body[0].x + 1 === data.board.width) {
+        nums[3] = 0;
+      }
+      if ((data.board.snakes[i].body[j].x === data.you.body[0].x && data.board.snakes[i].body[j].y === data.you.body[0].y - 1) || data.you.body[0].y - 1 === -1) {
+        nums[0] = 0;
+      }
+      if ((data.board.snakes[i].body[j].x === data.you.body[0].x && data.board.snakes[i].body[j].y === data.you.body[0].y + 1) || data.you.body[0].y + 1 === data.board.height) {
+        nums[1] = 0;
+      }
+    }
+  }
+  if (data.board.food.length) {
+    var distFood = data.board.food.map(function(a) {
+      return Math.pow(a.x - data.you.body[0].x, 2) + Math.pow(a.y - data.you.body[0].y, 2);
+    });
+    var closestFood = data.board.food[distFood.indexOf(Math.min(...distFood))];
+    if (data.you.body[0].x > closestFood.x && nums[2]) {
+      return 2;
+    }
+    if (data.you.body[0].x < closestFood.x && nums[3]) {
+      return 3;
+    }
+    if (data.you.body[0].y > closestFood.y && nums[0]) {
+      return 0;
+    }
+    if (data.you.body[0].y < closestFood.y && nums[1]) {
+      return 1;
+    }
+  }
+  while (true) {
+    var move = Math.floor(Math.random() * possible_moves.length);
+    if (nums[move]) {
+      return move;
+    }
+  }
+};
+// This function is called on every turn of a game. It's how your snake decides where to move.
 app.post('/move', (request, response) => {
   var data = request.body;
 
-  // Choose a random direction to move in
   possible_moves = ["up", "down", "left", "right"]
-  var choice = Math.floor(Math.random() * possible_moves.length);
+  var choice = makeChoice(data);
   var snake_move = possible_moves[choice];
 
   console.log("MOVE: " + snake_move);
