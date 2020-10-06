@@ -24,7 +24,7 @@ app.use(poweredByHandler)
 //  This function is called everytime your snake is entered into a game.
 //  cherrypy.request.json contains information about the game that's about to be played.
 // TODO: Use this function to decide how your snake is going to look on the board.
-app.post('/start', (request, response) => {
+app.get('/start', (request, response) => {
   console.log("START");
 
   // Response data
@@ -85,7 +85,7 @@ function makeChoice(data) {
   }
 };
 // This function is called on every turn of a game. It's how your snake decides where to move.
-app.post('/move', (request, response) => {
+app.get('/move', (request, response) => {
   var data = request.body;
 
   possible_moves = ["up", "down", "left", "right"]
@@ -98,13 +98,13 @@ app.post('/move', (request, response) => {
 
 // This function is called when a game your snake was in ends.
 // It's purely for informational purposes, you don't have to make any decisions here.
-app.post('/end', (request, response) => {
+app.get('/end', (request, response) => {
   console.log("END");
   return response.json({ message: "ok" });
 })
 
 // The Battlesnake engine calls this function to make sure your snake is working.
-app.post('/ping', (request, response) => {
+app.get('/ping', (request, response) => {
   return response.json({ message: "pong" });
 })
 
